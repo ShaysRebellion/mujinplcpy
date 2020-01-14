@@ -7,7 +7,7 @@ import sys
 import time
 import numpy as np
 
-from ..mujinplc import plcmemory, plccontroller, plclogic, plczmqserver
+from mujinplc import plcmemory, plccontroller, plclogic, plczmqserver
 
 import logging
 log = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def ConfigureLogging(logLevel=logging.DEBUG, outputStream=sys.stderr):
 
 
 def main():
-    NUM_PRODUCTION_CYCLES = 1000
+    NUM_PRODUCTION_CYCLES = 5
 
     ConfigureLogging()
 
@@ -66,8 +66,12 @@ def main():
     log.warn('Cleared all signal(s)')
 
     # Wait for robot ready to move robot to home
-    plc.WaitUntilMoveToHomeReady()
-    log.warn('Robot ready to move to home')
+    # Debug later: Timeout...caused by not setting correct values?
+    try:
+        plc.WaitUntilMoveToHomeReady()
+        log.warn('Robot ready to move to home')
+    except:
+        log.warn('Robot ready to move to home timeout')
 
     # Move robot to home
     # Debug later: Issue caused by robot bridges not setting PLC variable(s) to correct values
@@ -78,8 +82,12 @@ def main():
         log.warn('Robot moving to home timeout')
 
     # Wait for robot ready for order cycle
-    plc.WaitUntilOrderCycleReady()
-    log.warn('Robot ready for order cycle')
+    # Debug later: Timeout...caused by not setting correct values?
+    try:
+        plc.WaitUntilOrderCycleReady()
+        log.warn('Robot ready for order cycle')
+    except:
+        log.warn('Robot ready for order cycle timeout')
 
     # Define order parameters
     # Debug later: PLC logic class fails to set order variables in memory correctly
@@ -115,7 +123,7 @@ def main():
     # Write to output file
     totalTime = endTime - startTime
     f = open('results.txt', 'a')
-    f.write('Ran production cycle %d times, which took %d seconds' % NUM_PRODUCTION_CYCLES % totalTime)
+    f.write('Ran production cycle %d times, which took %d seconds\n' % (NUM_PRODUCTION_CYCLES, totalTime))
 
     # Stop everything
     log.warn('Server stopping.')
